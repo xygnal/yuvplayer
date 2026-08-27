@@ -44,6 +44,8 @@
 #include <share.h>
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
+#include <shlwapi.h>
+#pragma comment(lib, "Shlwapi.lib")
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,33 +63,16 @@ typedef struct
 } size_info_t;
 
 static const size_info_t size_info[] = {
-    { L"1920x1080", 1920, 1080, ID_SIZE_HD },
-    { L"1080p", 1920, 1080, ID_SIZE_HD },
-
-    { L"1280x720", 1280, 720, ID_SIZE_SD },
-    { L"720p", 1280, 720, ID_SIZE_SD },
-
-    { L"832x480", 832, 480, ID_SIZE_WVGA },
-    { L"wvga", 832, 480, ID_SIZE_WVGA },
-
-    { L"416x240", 416, 240, ID_SIZE_WQVGA },
-    { L"wqvga", 416, 240, ID_SIZE_WQVGA },
-
-    { L"640x480", 640, 480, ID_SIZE_VGA },
-    { L"vga", 640, 480, ID_SIZE_VGA },
-
-    { L"176x144", 176, 144, ID_SIZE_QCIF },
-    { L"qcif", 176, 144, ID_SIZE_QCIF },
-
-    { L"352x288", 352, 288, ID_SIZE_CIF },
-    { L"cif", 352, 288, ID_SIZE_CIF },
-
-    { L"192x256", 192, 256, ID_SIZE_192X256 },
-
-    { L"3840x2160", 3840, 2160, ID_SIZE_CUSTOM },
-    { L"1920x1088", 1920, 1088, ID_SIZE_CUSTOM },
-    { L"2560x1600", 2560, 1600, ID_SIZE_CUSTOM },
-
+    { L"3840x2160", 3840, 2160, ID_SIZE_2160P },
+    { L"2160p", 3840, 2160, ID_SIZE_2160P },
+    { L"1920x1080", 1920, 1080, ID_SIZE_1080P },
+    { L"1080p", 1920, 1080, ID_SIZE_1080P },
+    { L"1280x720", 1280, 720, ID_SIZE_720P },
+    { L"720p", 1280, 720, ID_SIZE_720P },
+    { L"960x540", 960, 540, ID_SIZE_540P },
+    { L"540p", 960, 540, ID_SIZE_540P },
+    { L"640x360", 640, 360, ID_SIZE_360P },
+    { L"360p", 640, 360, ID_SIZE_360P },
     // end delimiter
     { NULL, 0, 0, 0 }
 };
@@ -344,44 +329,25 @@ void CyuvplayerDlg::OnSizeChange(UINT nID )
         menu->CheckMenuItem(i,    MF_UNCHECKED);
 
     switch ( nID ) {
-        case ID_SIZE_HD:
-            menu->CheckMenuItem( ID_SIZE_HD,    MF_CHECKED);
+        case ID_SIZE_2160P:
+            menu->CheckMenuItem( ID_SIZE_2160P,    MF_CHECKED);
+            Resize( 3840, 2160 );
+            return;
+        case ID_SIZE_1080P:
+            menu->CheckMenuItem( ID_SIZE_1080P,    MF_CHECKED);
             Resize( 1920, 1080 );
             return;
-
-        case ID_SIZE_SD:
-            menu->CheckMenuItem( ID_SIZE_SD,    MF_CHECKED);
+        case ID_SIZE_720P:
+            menu->CheckMenuItem( ID_SIZE_720P,    MF_CHECKED);
             Resize( 1280, 720 );
             return;
-
-        case ID_SIZE_VGA:
-            menu->CheckMenuItem( ID_SIZE_VGA,    MF_CHECKED);
-            Resize( 640, 480 );
+        case ID_SIZE_540P:
+            menu->CheckMenuItem( ID_SIZE_540P,    MF_CHECKED);
+            Resize( 960, 540 );
             return;
-
-        case ID_SIZE_WVGA:
-            menu->CheckMenuItem( ID_SIZE_WVGA,    MF_CHECKED);
-            Resize( 832, 480 );
-            return;
-
-        case ID_SIZE_WQVGA:
-            menu->CheckMenuItem( ID_SIZE_WQVGA,    MF_CHECKED);
-            Resize( 416, 240 );
-            return;
-
-        case ID_SIZE_CIF:
-            menu->CheckMenuItem( ID_SIZE_CIF,    MF_CHECKED);
-            Resize( 352, 288 );
-            return;
-
-        case ID_SIZE_QCIF:
-            menu->CheckMenuItem( ID_SIZE_QCIF,    MF_CHECKED);
-            Resize( 176, 144 );
-            return;
-
-        case ID_SIZE_192X256:
-            menu->CheckMenuItem( ID_SIZE_192X256,    MF_CHECKED);
-            Resize( 192, 256 );
+        case ID_SIZE_360P:
+            menu->CheckMenuItem( ID_SIZE_360P,    MF_CHECKED);
+            Resize( 640, 360 );
             return;
     }
 
@@ -1027,28 +993,24 @@ BOOL CyuvplayerDlg::PreTranslateMessage(MSG* pMsg)
                 OnOpen();
                 return TRUE;
 
-            case 'h':
-            case 'H':
-                OnSizeChange(ID_SIZE_HD);
+            case '2':
+                OnSizeChange(ID_SIZE_2160P);
                 return TRUE;
 
-            case 's':
-            case 'S':
-                OnSizeChange(ID_SIZE_SD);
+            case '1':
+                OnSizeChange(ID_SIZE_1080P);
                 return TRUE;
 
-            case 'c':
-            case 'C':
-                //if ( GetKeyState(VK_CONTROL) < 0 ) {
-                //    MessageBox(L"hehe");
-                //}
-                //else
-                    OnSizeChange(ID_SIZE_CIF);
+            case '7':
+                OnSizeChange(ID_SIZE_720P);
                 return TRUE;
 
-            case 'q':
-            case 'Q':
-                OnSizeChange(ID_SIZE_QCIF);
+            case '5':
+                OnSizeChange(ID_SIZE_540P);
+                return TRUE;
+
+            case '3':
+                OnSizeChange(ID_SIZE_360P);
                 return TRUE;
 
             case 'g':
@@ -1104,12 +1066,13 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 #define Y4M_MAGIC_LEN 9 // strlen("YUV4MPEG2")
     char y4m_header[MAX_YUV4_HEADER + Y4M_MAGIC_LEN + 1];
     int bytesRead = _read( fd, y4m_header, MAX_YUV4_HEADER + Y4M_MAGIC_LEN + 1);
+    int hdr_w = 0, hdr_h = 0;
+    UINT nIDsizeWH = ID_SIZE_CUSTOM;
     m_sizeHdrFile = 0;
     m_sizeHdrFrame = 0;
     m_rateNum = 30000;
     m_rateDenom = 1001;
     if (strncmp(y4m_header, Y4M_MAGIC, Y4M_MAGIC_LEN) == 0) {
-        int     hdr_w = 0, hdr_h = 0;
         char    interlace_inf = 'p';
         char    *tokstart, *tokend, *header_end;
 #define MAX_Y4m_COLOR_SPACE  8
@@ -1169,6 +1132,13 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
             MessageBox(dbg, _T("ERROR"), MB_OK | MB_TOPMOST);
             OnOK();
         }
+        const int sizeWH_tpcal[ID_SIZE_END-ID_SIZE_START][2] = {{3840,2160},{1920,1080},{1280,720},{960,540},{640,360}};
+        for (int id = 0; id < ID_SIZE_END-ID_SIZE_START; ++id)
+            if (sizeWH_tpcal[id][0] == hdr_w && sizeWH_tpcal[id][1] == hdr_h) {
+                nIDsizeWH = ID_SIZE_START + id;
+                break;
+            }
+
         OnColor(nIDcolor);
 
         _lseeki64( fd, m_sizeHdrFile, SEEK_SET );
@@ -1184,13 +1154,6 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
                 break;
         m_sizeHdrFrame = pos_frm_hdr_end + 1;
 
-        for (j = ID_SIZE_START; j <= ID_SIZE_END; j++)
-            menu->CheckMenuItem(j, MF_UNCHECKED);
-
-        // update SELECTED size
-        menu->CheckMenuItem(40026U, MF_CHECKED);
-
-        Resize(hdr_w, hdr_h);
     } else {
         // get filename
         if ((file = wcsrchr(path, L'\\')) == NULL)
@@ -1198,22 +1161,102 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
         else
             file = file++;
 
-        for (i = 0; size_info[i].string != NULL; i++) {
-            if (wcsstr(file, size_info[i].string) != NULL) {
-                // uncheck all size menu items
-                for (j = ID_SIZE_START; j <= ID_SIZE_END; j++)
-                    menu->CheckMenuItem(j, MF_UNCHECKED);
-
-                // update SELECTED size
-                menu->CheckMenuItem(size_info[i].size_id, MF_CHECKED);
-
-                // reallocate memory
-                Resize(size_info[i].width, size_info[i].height);
-
+        // 1st detection: 2160p/ 1080p/ 720p/ 540p/ 360p
+        for (i = 0; size_info[i].string != NULL; i++)
+            if (StrStrIW(file, size_info[i].string) != NULL) {
+                hdr_w = size_info[i].width;
+                hdr_h = size_info[i].height;
+                nIDsizeWH = size_info[i].size_id;
                 break;
             }
+
+        // 2nd detection: qhd/ qvga/ sif/ cif/ qcif
+        if (hdr_w == 0) {
+            const wchar_t *size_kword[5] = { L"qhd", L"qvga", L"sif", L"cif", L"qcif"};
+            const int sizeWH[5][2] = {{2560,1440},{320,240},{352,240},{352,288},{176,144}};
+            for (i = 0; i < 5; ++i)
+                if (StrStrIW(file, size_kword[i]) != NULL) {
+                    hdr_w = sizeWH[i][0];
+                    hdr_h = sizeWH[i][1];
+                    break;
+                }
+        }
+
+        // 3rd detection: WIDTHxHEIGHT
+        if (hdr_w == 0) {
+            for (const wchar_t* p = file; *p; ++p) {
+                int w, h; wchar_t sep;
+                if (swscanf(p, L"%d%1[xX]%d", &w, &sep, &h) == 3 && w > 0 && h > 0) {
+                    hdr_w = w; hdr_h = h; break;
+                }
+            }
+        }
+
+        // 4th detection: list the size when the file size is multiple,
+        //                pop-up the selection box,
+        //                and set hdr_w and hdr_h with the selected one.
+        if (hdr_w == 0) {
+            const int sizeWHcand[][2] = {
+                {3840,2160},{1920,1080},{1280,720},{960,540},{640,360},
+                {2560,1440},{320,240},{352,240},{352,288},{176,144},
+                {640,480},{832,480},{416,240},{720,480},{1920,1088},
+                {2560,1600},{256,128}
+            };
+            __int64 fileSize = _filelengthi64(fd);
+            if (fileSize > 0) {
+                int candIdx[64]; __int64 candFrames[64]; int nCand = 0;
+                int nTotal = sizeof(sizeWHcand) / sizeof(sizeWHcand[0]);
+                for (int k = 0; k < nTotal && nCand < 64; ++k) {
+                    int w = sizeWHcand[k][0], h = sizeWHcand[k][1];
+                    __int64 frame = (__int64)w * h * 3 / 2; // YUV420
+                    if (frame > 0 && fileSize % frame == 0) {
+                        candIdx[nCand] = k; candFrames[nCand] = fileSize / frame; nCand++;
+                    }
+                }
+                if (nCand == 1) {
+                    hdr_w = sizeWHcand[candIdx[0]][0]; hdr_h = sizeWHcand[candIdx[0]][1];
+                } else if (nCand > 1) {
+                    wchar_t labels[64][64]; TASKDIALOG_BUTTON btns[64];
+                    for (int i = 0; i < nCand; ++i) {
+                        int w = sizeWHcand[candIdx[i]][0], h = sizeWHcand[candIdx[i]][1];
+                        swprintf(labels[i], 64, L"%dx%d - %lld frames (%.2f MB)", w, h, candFrames[i], (double)fileSize / (1024*1024));
+                        btns[i].nButtonID = 1000 + i; btns[i].pszButtonText = labels[i];
+                    }
+                    TASKDIALOGCONFIG cfg = {0}; cfg.cbSize = sizeof(cfg);
+                    cfg.hwndParent = m_hWnd; cfg.hInstance = AfxGetInstanceHandle();
+                    cfg.dwFlags = TDF_ALLOW_DIALOG_CANCELLATION;
+                    cfg.dwCommonButtons = TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON;
+                    cfg.pszWindowTitle = L"Select YUV size";
+                    cfg.pszMainInstruction = L"File size is multiple of several YUV420 sizes. Select one:";
+                    cfg.pRadioButtons = btns; cfg.cRadioButtons = nCand; cfg.nDefaultRadioButton = 1000;
+                    cfg.pszMainIcon = TD_INFORMATION_ICON;
+                    int btn = 0, radio = 0; HRESULT hr = TaskDialogIndirect(&cfg, &btn, &radio, NULL);
+                    if (SUCCEEDED(hr) && btn == IDOK && radio >= 1000 && radio < 1000 + nCand) {
+                        hdr_w = sizeWHcand[candIdx[radio - 1000]][0]; hdr_h = sizeWHcand[candIdx[radio - 1000]][1];
+                    } else if (nCand > 0 && btn != IDCANCEL) {
+                        // fallback: keep first if dialog failed, but respect cancel
+                        if (FAILED(hr)) { hdr_w = sizeWHcand[candIdx[0]][0]; hdr_h = sizeWHcand[candIdx[0]][1]; }
+                    }
+                }
+            }
+        }
+
+        // 5th default
+        if (hdr_w == 0) {
+            hdr_w = 352;
+            hdr_h = 288;
         }
     }
+
+    for (j = ID_SIZE_START; j <= ID_SIZE_END; j++)
+        menu->CheckMenuItem(j, MF_UNCHECKED);
+    menu->CheckMenuItem(nIDsizeWH, MF_CHECKED);
+    if (nIDsizeWH == ID_SIZE_CUSTOM) {
+        customDlg->width = hdr_w;
+        customDlg->height = hdr_h;
+    }
+
+    Resize(hdr_w, hdr_h);
 
     UpdateParameter();
     LoadFrame();

@@ -58,16 +58,13 @@
 #define ID_COLOR_END                    40013
 
 #define ID_SIZE_START                   40020
-#define ID_SIZE_HD                      40020
-#define ID_SIZE_SD                      40021
-#define ID_SIZE_VGA                     40022
-#define ID_SIZE_WVGA                    40023
-#define ID_SIZE_WQVGA                   40024
-#define ID_SIZE_CIF                     40025
-#define ID_SIZE_QCIF                    40026
-#define ID_SIZE_192X256                 40027
-#define ID_SIZE_CUSTOM                  40028
-#define ID_SIZE_END                     40028
+#define ID_SIZE_2160P                   40020
+#define ID_SIZE_1080P                   40021
+#define ID_SIZE_720P                    40022
+#define ID_SIZE_540P                    40023
+#define ID_SIZE_360P                    40024
+#define ID_SIZE_CUSTOM                  40025
+#define ID_SIZE_END                     40025
 
 #define ID_ZOOM_START                   40040
 #define ID_ZOOM_41                      40040
