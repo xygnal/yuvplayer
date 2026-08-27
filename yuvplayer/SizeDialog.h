@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,21 +35,21 @@
 
 class CSizeDialog : public CDialog
 {
-	DECLARE_DYNAMIC(CSizeDialog)
+    DECLARE_DYNAMIC(CSizeDialog)
 
 public:
-	CSizeDialog(CWnd* pParent = NULL);   // standard constructor
-	virtual ~CSizeDialog();
+    CSizeDialog(CWnd* pParent = NULL);   // standard constructor
+    virtual ~CSizeDialog();
 
 // Dialog Data
-	enum { IDD = IDD_CUSTOM_SIZE };
+    enum { IDD = IDD_CUSTOM_SIZE };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 public:
-	UINT width;
-	UINT height;
-	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+    UINT width;
+    UINT height;
+    afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 };

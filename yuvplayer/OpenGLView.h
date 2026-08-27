@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,50 +35,48 @@
 
 class COpenGLView : public CView
 {
-	DECLARE_DYNCREATE(COpenGLView)
+    DECLARE_DYNCREATE(COpenGLView)
 
 public:
-	COpenGLView();           // protected constructor used by dynamic creation
-	virtual ~COpenGLView();
+    COpenGLView();           // protected constructor used by dynamic creation
+    virtual ~COpenGLView();
 
 public:
-	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 #ifdef _DEBUG
-	virtual void AssertValid() const;
+    virtual void AssertValid() const;
 #ifndef _WIN32_WCE
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 #endif
 
 protected:
-	CDC* m_pDC; 
+    CDC* m_pDC;
 
-	unsigned char* im;
-	int width;
-	int height;
+    unsigned char* im;
+    int width;
+    int height;
 
-	/* texture width & height */
-	int t_width; 
-	int t_height;
-	
-	BOOL loaded[2];	
-	unsigned int texture[2];
+    /* texture width & height */
+    int t_width;
+    int t_height;
 
-	float ratio;
+    BOOL loaded[2];
+    unsigned int texture[2];
 
-	DECLARE_MESSAGE_MAP()
-	HGLRC m_hRC;
+    float ratio;
+
+    DECLARE_MESSAGE_MAP()
+    HGLRC m_hRC;
 
 public:
-	afx_msg BOOL PreCreateWindow(CREATESTRUCT& cs);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnDestroy();
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	void SetParam(int width, int height, float ratio);
-	void ChangeRatio(float ratio);
-	void LoadTexture(unsigned char* rgba);
-	void LoadSegmentTexture(unsigned char* segment);
+    afx_msg BOOL PreCreateWindow(CREATESTRUCT& cs);
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg void OnDestroy();
+    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+    void SetParam(int width, int height, float ratio);
+    void ChangeRatio(float ratio);
+    void LoadTexture(unsigned char* rgba);
+    void LoadSegmentTexture(unsigned char* segment);
 };
-
-

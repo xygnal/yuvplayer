@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,7 +43,7 @@
 // CyuvplayerApp
 
 BEGIN_MESSAGE_MAP(CyuvplayerApp, CWinApp)
-	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
+    ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -51,8 +51,8 @@ END_MESSAGE_MAP()
 
 CyuvplayerApp::CyuvplayerApp()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+    // TODO: add construction code here,
+    // Place all significant initialization in InitInstance
 }
 
 
@@ -65,45 +65,42 @@ CyuvplayerApp theApp;
 
 BOOL CyuvplayerApp::InitInstance()
 {
-	// InitCommonControlsEx() is required on Windows XP if an application
-	// manifest specifies use of ComCtl32.dll version 6 or later to enable
-	// visual styles.  Otherwise, any window creation will fail.
-	INITCOMMONCONTROLSEX InitCtrls;
-	InitCtrls.dwSize = sizeof(InitCtrls);
-	// Set this to include all the common control classes you want to use
-	// in your application.
-	InitCtrls.dwICC = ICC_WIN95_CLASSES;
-	InitCommonControlsEx(&InitCtrls);
+    // InitCommonControlsEx() is required on Windows XP if an application
+    // manifest specifies use of ComCtl32.dll version 6 or later to enable
+    // visual styles.  Otherwise, any window creation will fail.
+    INITCOMMONCONTROLSEX InitCtrls;
+    InitCtrls.dwSize = sizeof(InitCtrls);
+    // Set this to include all the common control classes you want to use
+    // in your application.
+    InitCtrls.dwICC = ICC_WIN95_CLASSES;
+    InitCommonControlsEx(&InitCtrls);
 
-	CWinApp::InitInstance();
+    CWinApp::InitInstance();
 
-	AfxEnableControlContainer();
+    AfxEnableControlContainer();
 
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	// of your final executable, you should remove from the following
-	// the specific initialization routines you do not need
-	// Change the registry key under which our settings are stored
-	// TODO: You should modify this string to be something appropriate
-	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+    // Standard initialization
+    // If you are not using these features and wish to reduce the size
+    // of your final executable, you should remove from the following
+    // the specific initialization routines you do not need
+    // Change the registry key under which our settings are stored
+    // TODO: You should modify this string to be something appropriate
+    // such as the name of your company or organization
+    SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
-	CyuvplayerDlg dlg;
-	m_pMainWnd = &dlg;
+    CyuvplayerDlg dlg;
+    m_pMainWnd = &dlg;
 
-	INT_PTR nResponse = dlg.DoModal();
-	if (nResponse == IDOK)
-	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with OK
-	}
-	else if (nResponse == IDCANCEL)
-	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with Cancel
-	}
+    INT_PTR nResponse = dlg.DoModal();
+    if (nResponse == IDOK) {
+        // TODO: Place code here to handle when the dialog is
+        //  dismissed with OK
+    } else if (nResponse == IDCANCEL) {
+        // TODO: Place code here to handle when the dialog is
+        //  dismissed with Cancel
+    }
 
-	// Since the dialog has been closed, return FALSE so that we exit the
-	//  application, rather than start the application's message pump.
-	return FALSE;
+    // Since the dialog has been closed, return FALSE so that we exit the
+    //  application, rather than start the application's message pump.
+    return FALSE;
 }

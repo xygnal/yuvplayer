@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,10 +34,10 @@
 #pragma once
 
 #ifndef __AFXWIN_H__
-	#error "include 'stdafx.h' before including this file for PCH"
+    #error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#include "resource.h"		// main symbols
+#include "resource.h"        // main symbols
 
 
 // CyuvplayerApp:
@@ -47,15 +47,15 @@
 class CyuvplayerApp : public CWinApp
 {
 public:
-	CyuvplayerApp();
+    CyuvplayerApp();
 
 // Overrides
-	public:
-	virtual BOOL InitInstance();
+    public:
+    virtual BOOL InitInstance();
 
 // Implementation
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
 };
 

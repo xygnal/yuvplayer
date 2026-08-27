@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -41,8 +41,8 @@
 IMPLEMENT_DYNAMIC(CGoDialog, CDialog)
 
 CGoDialog::CGoDialog(CWnd* pParent /*=NULL*/)
-	: CDialog(CGoDialog::IDD, pParent)
-	, frame_no(0)
+    : CDialog(CGoDialog::IDD, pParent)
+    , frame_no(0)
 {
 
 }
@@ -53,13 +53,13 @@ CGoDialog::~CGoDialog()
 
 void CGoDialog::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_FRAME_NO, frame_no);
+    CDialog::DoDataExchange(pDX);
+    DDX_Text(pDX, IDC_FRAME_NO, frame_no);
 }
 
 
 BEGIN_MESSAGE_MAP(CGoDialog, CDialog)
-	ON_WM_SHOWWINDOW()
+    ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 
@@ -67,13 +67,13 @@ END_MESSAGE_MAP()
 
 void CGoDialog::OnShowWindow(BOOL bShow, UINT nStatus)
 {
-	CDialog::OnShowWindow(bShow, nStatus);
+    CDialog::OnShowWindow(bShow, nStatus);
 
-	// TODO: Add your message handler code here
-	//SetWindowPos( NULL, 10, 10, 0, 0, SWP_NOSIZE );
+    // TODO: Add your message handler code here
+    //SetWindowPos( NULL, 10, 10, 0, 0, SWP_NOSIZE );
 
-	CEdit* edit = (CEdit*)GetDlgItem(IDC_FRAME_NO);
+    CEdit* edit = (CEdit*)GetDlgItem(IDC_FRAME_NO);
 
-	edit->SetFocus();
-	edit->SetSel(10,0);
+    edit->SetFocus();
+    edit->SetSel(10,0);
 }

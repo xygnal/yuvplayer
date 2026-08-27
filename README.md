@@ -1,4 +1,9 @@
-# yuvplayer
+# yuvplayer (xygnal fork)
+
+> This repository is based on https://github.com/Tee0125/yuvplayer. Thanks to the original author [Tee0125](https://github.com/Tee0125).
+Some functions is added such as .y4m support and improved YUV size detection.
+
+# yuvplayer (upstream)
 
 Lightweight YUV player which supports various YUV format
 

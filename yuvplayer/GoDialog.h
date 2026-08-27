@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,20 +35,20 @@
 
 class CGoDialog : public CDialog
 {
-	DECLARE_DYNAMIC(CGoDialog)
+    DECLARE_DYNAMIC(CGoDialog)
 
 public:
-	CGoDialog(CWnd* pParent = NULL);   // standard constructor
-	virtual ~CGoDialog();
+    CGoDialog(CWnd* pParent = NULL);   // standard constructor
+    virtual ~CGoDialog();
 
 // Dialog Data
-	enum { IDD = IDD_GO_DIALOG };
+    enum { IDD = IDD_GO_DIALOG };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 public:
-	UINT frame_no;
-	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+    UINT frame_no;
+    afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 };

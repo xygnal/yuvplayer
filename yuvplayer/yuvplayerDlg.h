@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,9 +38,10 @@
 #include "SizeDialog.h"
 #include "OpenGLView.h"
 
-#include <io.h> 
+#include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <mmsystem.h>
 
 #define DEFAULT_WIDTH 352
 #define DEFAULT_HEIGHT 288
@@ -56,112 +57,122 @@ class CyuvplayerDlg : public CDialog
 {
 // Construction
 public:
-	CyuvplayerDlg(CWnd* pParent = NULL);	// standard constructor
+    CyuvplayerDlg(CWnd* pParent = NULL);    // standard constructor
 
 // Dialog Data
-	enum { IDD = IDD_YUVPLAYER_DIALOG };
+    enum { IDD = IDD_YUVPLAYER_DIALOG };
 
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
+    protected:
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 
 // Implementation
 protected:
-	HICON m_hIcon;
+    HICON m_hIcon;
 
-	// Generated message map functions
-	virtual BOOL OnInitDialog();
-	afx_msg void OnPaint();
-	afx_msg HCURSOR OnQueryDragIcon();
-	DECLARE_MESSAGE_MAP()
+    // Generated message map functions
+    virtual BOOL OnInitDialog();
+    afx_msg void OnPaint();
+    afx_msg HCURSOR OnQueryDragIcon();
+    DECLARE_MESSAGE_MAP()
 
 private:
-	wchar_t* filename;
+    wchar_t* filename;
 
-	int fd; 
+    int fd;
 
-	int count;
-	int cur;
+    int count;
+    int cur;
 
-	int frame_size;
-	int frame_size_y;
-	int frame_size_uv;
+    int frame_size;
+    int frame_size_y;
+    int frame_size_uv;
 
-	int width, height;
-	int t_width, t_height;
+    int width, height;
+    int t_width, t_height;
 
-	unsigned char* y;
-	unsigned char* u;
-	unsigned char* v;
-	
-	unsigned char* rgba;
-	unsigned char* misc;
-	unsigned char* segment;
+    unsigned char* y;
+    unsigned char* u;
+    unsigned char* v;
 
-	int segment_option;
+    unsigned char* rgba;
+    unsigned char* misc;
+    unsigned char* segment;
 
-	float ratio;
+    int segment_option;
 
-	color_format m_color;
-	
-	CBitmapButton m_open_btn;
-	CBitmapButton m_rewind_btn;
-	CBitmapButton m_play_btn;
-	CBitmapButton m_stop_btn;
-	CBitmapButton m_fforward_btn;
+    float ratio;
 
-	CSliderCtrl m_slider;
-	CStatic m_view;
+    int m_sizeHdrFile;
+    int m_sizeHdrFrame;
+    int m_rateNum;
+    int m_rateDenom;
+    MMRESULT m_mmTimer;
+    UINT m_timerInterval;
+    LARGE_INTEGER m_qpcFreq;
+    LARGE_INTEGER m_lastQpc;
 
-	CSizeDialog* customDlg;
+    color_format m_color;
 
-	void Resize(int width, int height);
-	void UpdateParameter(void);
-	void LoadFrame(void);
-	void yuv2rgb(void);
-	void fforward(void);
-	void rewind(void);
-	void StartTimer(void);
-	void StopTimer(void);
-	void rgb2yuv444();
-	void rgb2yuv422();
-	void rgb2yuv420();
-	void OnCmenuSaveYuv( color_format type );
+    CBitmapButton m_open_btn;
+    CBitmapButton m_rewind_btn;
+    CBitmapButton m_play_btn;
+    CBitmapButton m_stop_btn;
+    CBitmapButton m_fforward_btn;
 
-	COpenGLView* OpenGLView;
+    CSliderCtrl m_slider;
+    CStatic m_view;
 
-	BOOL started;
-	CMenu* menu;
+    CSizeDialog* customDlg;
+
+    void Resize(int width, int height);
+    void UpdateParameter(void);
+    void LoadFrame(void);
+    void yuv2rgb(void);
+    void fforward(void);
+    void rewind(void);
+    void StartTimer(void);
+    void StopTimer(void);
+    static void CALLBACK MmTimerCallback(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
+    void rgb2yuv444();
+    void rgb2yuv422();
+    void rgb2yuv420();
+    void OnCmenuSaveYuv( color_format type );
+
+    COpenGLView* OpenGLView;
+
+    BOOL started;
+    CMenu* menu;
 
 public:
-	afx_msg void OnOpen();
-	afx_msg void OnFileReload();
-	afx_msg void OnSizeChange(UINT nID );
-	afx_msg void OnColor(UINT nID);
-	afx_msg void OnZoom(UINT nID);
-	afx_msg void OnSegment(UINT nID );
+    afx_msg void OnOpen();
+    afx_msg void OnFileReload();
+    afx_msg void OnSizeChange(UINT nID );
+    afx_msg void OnColor(UINT nID);
+    afx_msg void OnZoom(UINT nID);
+    afx_msg void OnSegment(UINT nID );
 
-	afx_msg void OnBnClickedRewind();
-	afx_msg void OnBnClickedPlay();
-	afx_msg void OnBnClickedStop();
-	afx_msg void OnBnClickedFforward();
+    afx_msg void OnBnClickedRewind();
+    afx_msg void OnBnClickedPlay();
+    afx_msg void OnBnClickedStop();
+    afx_msg void OnBnClickedFforward();
 
-	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg void OnFileExit();
-	afx_msg BOOL PreTranslateMessage(MSG* pMsg);
-	afx_msg void OnDestroy();
-	afx_msg void OnDropFiles(HDROP hDropInfo);
-	afx_msg void OnFileGo();
-	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnCmenuSaveLuminance();
-	afx_msg void OnCmenuSaveYuv444();
-	afx_msg void OnCmenuSaveYuv422();
-	afx_msg void OnCmenuSaveYuv420();
-	afx_msg void OnCmenuSaveRgb();
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
+    afx_msg void OnFileExit();
+    afx_msg BOOL PreTranslateMessage(MSG* pMsg);
+    afx_msg void OnDestroy();
+    afx_msg void OnDropFiles(HDROP hDropInfo);
+    afx_msg void OnFileGo();
+    afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
+    afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+    afx_msg void OnCmenuSaveLuminance();
+    afx_msg void OnCmenuSaveYuv444();
+    afx_msg void OnCmenuSaveYuv422();
+    afx_msg void OnCmenuSaveYuv420();
+    afx_msg void OnCmenuSaveRgb();
 
 private:
-	void UpdateFilename(wchar_t* path);
-	void FileOpen( wchar_t* path );;
-	void DrawSegment(void);
+    void UpdateFilename(wchar_t* path);
+    void FileOpen( wchar_t* path );;
+    void DrawSegment(void);
 };
