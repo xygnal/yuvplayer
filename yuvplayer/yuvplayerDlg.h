@@ -80,6 +80,10 @@ private:
     wchar_t* filename;
 
     int fd;
+    HANDLE hFile;
+    HANDLE hMapping;
+    BYTE* pMapped;
+    __int64 mappedSize;
 
     int count;
     int cur;

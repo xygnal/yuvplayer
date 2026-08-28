@@ -63,6 +63,16 @@ protected:
 
     BOOL loaded[2];
     unsigned int texture[2];
+    unsigned int pbo[2];
+    BOOL usePBO;
+
+    // Shader YUV path
+    unsigned int progYUV8, progYUV10;
+    unsigned int texY, texU, texV;
+    int yuvW, yuvH;
+    int yuvMode;
+    BOOL useShader;
+    BOOL shaderReady;
 
     float ratio;
 
@@ -79,4 +89,8 @@ public:
     void ChangeRatio(float ratio);
     void LoadTexture(unsigned char* rgba);
     void LoadSegmentTexture(unsigned char* segment);
+    BOOL InitShaders();
+    void LoadYUV420Texture(unsigned char* y, unsigned char* u, unsigned char* v, int w, int h);
+    void LoadYUV420_10LETexture(unsigned char* y, unsigned char* u, unsigned char* v, int w, int h);
+    BOOL IsShaderReady() const { return shaderReady && useShader; }
 };

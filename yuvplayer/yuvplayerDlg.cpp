@@ -46,6 +46,9 @@
 #pragma comment(lib, "winmm.lib")
 #include <shlwapi.h>
 #pragma comment(lib, "Shlwapi.lib")
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -95,6 +98,10 @@ CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
     QueryPerformanceFrequency(&m_qpcFreq);
 
     fd = -1;
+    hFile = INVALID_HANDLE_VALUE;
+    hMapping = NULL;
+    pMapped = NULL;
+    mappedSize = 0;
     ratio = 1.0;
 
     segment_option = 0;
@@ -528,13 +535,13 @@ void CyuvplayerDlg::UpdateParameter()
 {
     __int64 size;
 
-    if ( fd < 0 ) {
+    if ( fd < 0 && !pMapped ) {
         count = 0;
         return;
     }
 
-    _lseeki64( fd, 0, SEEK_END );
-    size = _telli64(fd);
+    if (pMapped) size = mappedSize;
+    else { _lseeki64( fd, 0, SEEK_END ); size = _telli64(fd); }
 
     frame_size_y = width*height;
     if (m_color == YUV444 || m_color == PACKED_YUV444)
@@ -573,44 +580,41 @@ void CyuvplayerDlg::LoadFrame(void)
     wsprintf( buf, L"%s - frame: %d/%d", filename, cur+1, count );
     SetWindowText(buf);
 
-    if ( fd < 0 ) {
+    if ( fd < 0 && !pMapped ) {
         m_slider.SetPos(0);
         return;
     }
 
-    _lseeki64( fd, (__int64)cur*(__int64)(m_sizeHdrFrame + frame_size) + m_sizeHdrFile + m_sizeHdrFrame, SEEK_SET );
-
-    if ( m_color == RGB32 )
-        _read( fd, misc, frame_size_y*4 );
-
-    else if ( m_color == RGB24 )
-        _read( fd, misc, frame_size_y*3 );
-
-    else if ( m_color == RGB16 )
-        _read( fd, misc, frame_size_y*2 );
-
-    else if ( m_color == UYVY )
-        _read( fd, misc, frame_size_y*2 );
-
-    else if ( m_color == YUYV )
-        _read( fd, misc, frame_size_y*2 );
-
-    else if ( m_color == NV12 || m_color == NV21) {
-        _read( fd, y,    frame_size_y );
-        _read( fd, misc, frame_size_y/2 );
+    if (pMapped) {
+        __int64 off = (__int64)cur*(__int64)(m_sizeHdrFrame + frame_size) + m_sizeHdrFile + m_sizeHdrFrame;
+        BYTE* src = pMapped + off;
+        if ( m_color == RGB32 ) memcpy(misc, src, frame_size_y*4);
+        else if ( m_color == RGB24 ) memcpy(misc, src, frame_size_y*3);
+        else if ( m_color == RGB16 ) memcpy(misc, src, frame_size_y*2);
+        else if ( m_color == UYVY ) memcpy(misc, src, frame_size_y*2);
+        else if ( m_color == YUYV ) memcpy(misc, src, frame_size_y*2);
+        else if ( m_color == NV12 || m_color == NV21) { memcpy(y, src, frame_size_y); memcpy(misc, src+frame_size_y, frame_size_y/2); }
+        else if ( m_color == PACKED_YUV444 ) memcpy(misc, src, frame_size);
+        else { memcpy(y, src, frame_size_y); memcpy(u, src+frame_size_y, frame_size_uv); memcpy(v, src+frame_size_y+frame_size_uv, frame_size_uv); }
+    } else {
+        _lseeki64( fd, (__int64)cur*(__int64)(m_sizeHdrFrame + frame_size) + m_sizeHdrFile + m_sizeHdrFrame, SEEK_SET );
+        if ( m_color == RGB32 ) _read( fd, misc, frame_size_y*4 );
+        else if ( m_color == RGB24 ) _read( fd, misc, frame_size_y*3 );
+        else if ( m_color == RGB16 ) _read( fd, misc, frame_size_y*2 );
+        else if ( m_color == UYVY ) _read( fd, misc, frame_size_y*2 );
+        else if ( m_color == YUYV ) _read( fd, misc, frame_size_y*2 );
+        else if ( m_color == NV12 || m_color == NV21) { _read( fd, y, frame_size_y ); _read( fd, misc, frame_size_y/2 ); }
+        else if ( m_color == PACKED_YUV444 ) _read( fd, misc, frame_size );
+        else { _read( fd, y, frame_size_y ); _read( fd, u, frame_size_uv ); _read( fd, v, frame_size_uv ); }
     }
 
-    else if ( m_color == PACKED_YUV444 )
-        _read( fd, misc, frame_size );
-
-    else {
-        _read( fd, y, frame_size_y );
-        _read( fd, u, frame_size_uv );
-        _read( fd, v, frame_size_uv );
+    if (OpenGLView->IsShaderReady() && (m_color == YUV420 || m_color == YUV420_10LE)) {
+        if (m_color == YUV420) OpenGLView->LoadYUV420Texture(y, u, v, width, height);
+        else OpenGLView->LoadYUV420_10LETexture(y, u, v, width, height);
+    } else {
+        yuv2rgb();
+        OpenGLView->LoadTexture(rgba);
     }
-
-    yuv2rgb();
-    OpenGLView->LoadTexture(rgba);
 
     m_slider.SetPos(cur);
     m_slider.UpdateData(FALSE);
@@ -632,7 +636,9 @@ void CyuvplayerDlg::yuv2rgb(void)
     short* rgb16;
 
     if ( m_color == PACKED_YUV444) {
+#pragma omp parallel for private(j,i,c,d,e,cur) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
             cur = line;
             for ( i = 0 ; i < width ; i++ ) {
                 c = misc[(j*width+i)*3    ] - 16;
@@ -643,11 +649,12 @@ void CyuvplayerDlg::yuv2rgb(void)
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
             }
-            line += t_width<<2;
         }
 
     } else if ( m_color == YUV444 ) {
+#pragma omp parallel for private(j,i,c,d,e,cur) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
             cur = line;
             for ( i = 0 ; i < width ; i++ ) {
                 c = y[j*width+i] - 16;
@@ -658,13 +665,14 @@ void CyuvplayerDlg::yuv2rgb(void)
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
             }
-            line += t_width<<2;
         }
 
     } else if ( m_color == YUV422 ) {
         stride_uv = (width+1)>>1;
 
+#pragma omp parallel for private(j,i,c,d,e,cur) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
             cur = line;
             for ( i = 0 ; i < width ; i++ ) {
                 c = y[j*width+i] - 16;
@@ -675,59 +683,58 @@ void CyuvplayerDlg::yuv2rgb(void)
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
             }
-            line += t_width<<2;
         }
 
     } else if ( m_color == UYVY ) {
-        unsigned char* t = misc;
+#pragma omp parallel for private(j,i,c,d,e,cur) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
+            unsigned char* tRow = misc + j*width*2;
             cur = line;
             for ( i = 0 ; i < width ; i+=2 ) {
-                c = *(t+1) - 16;    // Y1
-                d = *(t+0) - 128;   // U
-                e = *(t+2) - 128;   // V
+                c = tRow[i*2+1] - 16;    // Y1
+                d = tRow[i*2+0] - 128;   // U
+                e = tRow[i*2+2] - 128;   // V
 
                 (*cur) = clip(( 298 * c           + 409 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
 
-                c = *(t+3) - 16;    // Y2
+                c = tRow[i*2+3] - 16;    // Y2
                 (*cur) = clip(( 298 * c           + 409 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
-
-                t += 4;
             }
-            line += t_width<<2;
         }
 
     } else if ( m_color == YUYV ) {
-        unsigned char* t = misc;
+#pragma omp parallel for private(j,i,c,d,e,cur) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
+            unsigned char* tRow = misc + j*width*2;
             cur = line;
             for ( i = 0 ; i < width ; i+=2 ) {
-                c = *(t+0) - 16;    // Y1
-                d = *(t+1) - 128;   // U
-                e = *(t+3) - 128;   // V
+                c = tRow[i*2+0] - 16;    // Y1
+                d = tRow[i*2+1] - 128;   // U
+                e = tRow[i*2+3] - 128;   // V
 
                 (*cur) = clip(( 298 * c           + 409 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
 
-                c = *(t+2) - 16;    // Y2
+                c = tRow[i*2+2] - 16;    // Y2
                 (*cur) = clip(( 298 * c           + 409 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
-
-                t += 4;
             }
-            line += t_width<<2;
         }
 
     } else if ( m_color == YUV420 || m_color == NV12 || m_color == NV21 ) {
         stride_uv = (width+1)>>1;
 
+#pragma omp parallel for private(j,i,c,d,e,cur) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
             cur = line;
             for ( i = 0 ; i < width ; i++ ) {
                 c = y[j*width+i] - 16;
@@ -752,11 +759,12 @@ void CyuvplayerDlg::yuv2rgb(void)
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
             }
-            line += t_width<<2;
         }
 
     } else if ( m_color == YUV420_10LE || m_color == YUV420_10BE ) {
+#pragma omp parallel for private(j,i,c,d,e,cur) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
             cur = line;
             for ( i = 0 ; i < width ; i++ ) {
 
@@ -781,11 +789,12 @@ void CyuvplayerDlg::yuv2rgb(void)
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + (128<<2)) >> 10);cur++;
                 (*cur) = clip(( 298 * c + 516 * d           + (128<<2)) >> 10);cur+=2;
             }
-            line += t_width<<2;
         }
 
     } else if (m_color == RGB32 || m_color == RGB24 || m_color == RGB16) {
+#pragma omp parallel for private(j,i,r,g,b,cur,rgb16) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
             cur = line;
             for ( i = 0 ; i < width ; i++ ) {
                 if (m_color == RGB32) {
@@ -810,18 +819,18 @@ void CyuvplayerDlg::yuv2rgb(void)
                 (*cur) = g; cur++;
                 (*cur) = b; cur+=2;
             }
-            line += t_width<<2;
         }
 
     } else { // YYY
+#pragma omp parallel for private(j,i,cur) schedule(static) if (height >= 256)
         for ( j = 0 ; j < height ; j++ ) {
+            unsigned char* line = rgba + j*(t_width<<2);
             cur = line;
             for ( i = 0 ; i < width ; i++ ) {
                 (*cur) = y[j*width+i]; cur++;
                 (*cur) = y[j*width+i]; cur++;
                 (*cur) = y[j*width+i]; cur+=2;
             }
-            line += t_width<<2;
         }
     }
 }
@@ -1041,6 +1050,10 @@ void CyuvplayerDlg::OnDestroy()
     if ( rgba != NULL ) delete rgba;
     if ( misc != NULL ) delete misc;
 
+    if (pMapped) { UnmapViewOfFile(pMapped); pMapped = NULL; }
+    if (hMapping) { CloseHandle(hMapping); hMapping = NULL; }
+    if (hFile != INVALID_HANDLE_VALUE) { CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE; }
+    mappedSize = 0;
     if ( fd > -1 ) _close(fd);
 }
 
@@ -1052,10 +1065,27 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 
     StopTimer();
 
+    if (pMapped) { UnmapViewOfFile(pMapped); pMapped = NULL; }
+    if (hMapping) { CloseHandle(hMapping); hMapping = NULL; }
+    if (hFile != INVALID_HANDLE_VALUE) { CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE; }
+    mappedSize = 0;
     if ( fd > -1 )
         _close(fd);
 
     _wsopen_s( &fd, path, O_RDONLY|O_BINARY, _SH_DENYNO, 0);
+    // Try memory-mapped I/O for fast per-frame access (fallback to _read/_lseek if fails)
+    hFile = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+    if (hFile != INVALID_HANDLE_VALUE) {
+        LARGE_INTEGER sz; if (GetFileSizeEx(hFile, &sz)) mappedSize = sz.QuadPart;
+        if (mappedSize > 0 && mappedSize < ((__int64)4<<30)) { // 4GB limit for 32-bit
+            hMapping = CreateFileMappingW(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+            if (hMapping) {
+                pMapped = (BYTE*)MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0);
+                if (!pMapped) { CloseHandle(hMapping); hMapping = NULL; }
+            }
+        }
+        if (!pMapped) { CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE; mappedSize = 0; if (hMapping){CloseHandle(hMapping); hMapping=NULL;}}
+    }
     UpdateFilename( path );
     started = FALSE;
     cur = 0;
@@ -1065,7 +1095,14 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 #define Y4M_MAGIC "YUV4MPEG2"
 #define Y4M_MAGIC_LEN 9 // strlen("YUV4MPEG2")
     char y4m_header[MAX_YUV4_HEADER + Y4M_MAGIC_LEN + 1];
-    int bytesRead = _read( fd, y4m_header, MAX_YUV4_HEADER + Y4M_MAGIC_LEN + 1);
+    int bytesRead = 0;
+    if (pMapped) {
+        __int64 _toCopy = mappedSize < (MAX_YUV4_HEADER + Y4M_MAGIC_LEN + 1) ? mappedSize : (MAX_YUV4_HEADER + Y4M_MAGIC_LEN + 1);
+        int toCopy = (int)_toCopy;
+        memcpy(y4m_header, pMapped, toCopy); bytesRead = toCopy;
+    } else {
+        bytesRead = _read( fd, y4m_header, MAX_YUV4_HEADER + Y4M_MAGIC_LEN + 1);
+    }
     int hdr_w = 0, hdr_h = 0;
     UINT nIDsizeWH = ID_SIZE_CUSTOM;
     m_sizeHdrFile = 0;
@@ -1141,8 +1178,14 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 
         OnColor(nIDcolor);
 
-        _lseeki64( fd, m_sizeHdrFile, SEEK_SET );
-        bytesRead = _read( fd, y4m_header, MAX_FRAME_HEADER);
+        if (pMapped) {
+            __int64 _toCopy2 = (mappedSize - m_sizeHdrFile) < MAX_FRAME_HEADER ? (mappedSize - m_sizeHdrFile) : MAX_FRAME_HEADER;
+            int toCopy = (int)_toCopy2;
+            memcpy(y4m_header, pMapped + m_sizeHdrFile, toCopy); bytesRead = toCopy;
+        } else {
+            _lseeki64( fd, m_sizeHdrFile, SEEK_SET );
+            bytesRead = _read( fd, y4m_header, MAX_FRAME_HEADER);
+        }
         if ( strncmp(y4m_header, "FRAME", 5) ) {
             dbg.Format( _T("\"FRAME\" is not found") );
             MessageBox(dbg, _T("ERROR"), MB_OK | MB_TOPMOST);
@@ -1155,6 +1198,8 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
         m_sizeHdrFrame = pos_frm_hdr_end + 1;
 
     } else {
+        OnColor(ID_COLOR_YUV420); // default color YUV420
+
         // get filename
         if ((file = wcsrchr(path, L'\\')) == NULL)
             file = path;
@@ -1202,7 +1247,7 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
                 {640,480},{832,480},{416,240},{720,480},{1920,1088},
                 {2560,1600},{256,128}
             };
-            __int64 fileSize = _filelengthi64(fd);
+            __int64 fileSize = pMapped ? mappedSize : _filelengthi64(fd);
             if (fileSize > 0) {
                 int candIdx[64]; __int64 candFrames[64]; int nCand = 0;
                 int nTotal = sizeof(sizeWHcand) / sizeof(sizeWHcand[0]);

@@ -5,6 +5,8 @@
 
 ## Fork Additions
 - **Y4M** file support
+- **YUV size detection** logic is improved
+- **speed of play** is accelerated
 
 ## Build with MSBuild Tools (freeware ??)
 1. Download `vs_BuildTools.exe` from https://visualstudio.microsoft.com/downloads/ (bottom of page)
