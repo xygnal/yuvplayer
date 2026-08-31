@@ -36,6 +36,7 @@
 #include "yuvplayerDlg.h"
 
 #include "SizeDialog.h"
+#include "SelectSizeDialog.h"
 #include "GoDialog.h"
 
 #include <math.h>
@@ -1261,27 +1262,25 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
                 if (nCand == 1) {
                     hdr_w = sizeWHcand[candIdx[0]][0]; hdr_h = sizeWHcand[candIdx[0]][1];
                 } else if (nCand > 1) {
-                    wchar_t labels[64][64]; TASKDIALOG_BUTTON btns[64];
-                    for (int i = 0; i < nCand; ++i) {
-                        int w = sizeWHcand[candIdx[i]][0], h = sizeWHcand[candIdx[i]][1];
-                        swprintf(labels[i], 64, L"%dx%d - %lld frames (%.2f MB)", w, h, candFrames[i], (double)fileSize / (1024*1024));
-                        btns[i].nButtonID = 1000 + i; btns[i].pszButtonText = labels[i];
+                    CSelectSizeDialog dlg(this);
+                    dlg.SetCandidates(sizeWHcand, candIdx, candFrames, nCand, fileSize);
+                    // init custom w/h with last customDlg values
+                    dlg.m_customW = customDlg->width;
+                    dlg.m_customH = customDlg->height;
+                    if (dlg.DoModal() == IDOK) {
+                        if (dlg.m_isCustom) {
+                            hdr_w = (int)dlg.m_customW;
+                            hdr_h = (int)dlg.m_customH;
+                            nIDsizeWH = ID_SIZE_CUSTOM;
+                        } else {
+                            int sel = dlg.m_selectedIdx;
+                            if (sel >= 0 && sel < nCand) {
+                                hdr_w = sizeWHcand[candIdx[sel]][0];
+                                hdr_h = sizeWHcand[candIdx[sel]][1];
+                            }
+                        }
                     }
-                    TASKDIALOGCONFIG cfg = {0}; cfg.cbSize = sizeof(cfg);
-                    cfg.hwndParent = m_hWnd; cfg.hInstance = AfxGetInstanceHandle();
-                    cfg.dwFlags = TDF_ALLOW_DIALOG_CANCELLATION;
-                    cfg.dwCommonButtons = TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON;
-                    cfg.pszWindowTitle = L"Select YUV size";
-                    cfg.pszMainInstruction = L"File size is multiple of several YUV420 sizes. Select one:";
-                    cfg.pRadioButtons = btns; cfg.cRadioButtons = nCand; cfg.nDefaultRadioButton = 1000;
-                    cfg.pszMainIcon = TD_INFORMATION_ICON;
-                    int btn = 0, radio = 0; HRESULT hr = TaskDialogIndirect(&cfg, &btn, &radio, NULL);
-                    if (SUCCEEDED(hr) && btn == IDOK && radio >= 1000 && radio < 1000 + nCand) {
-                        hdr_w = sizeWHcand[candIdx[radio - 1000]][0]; hdr_h = sizeWHcand[candIdx[radio - 1000]][1];
-                    } else if (nCand > 0 && btn != IDCANCEL) {
-                        // fallback: keep first if dialog failed, but respect cancel
-                        if (FAILED(hr)) { hdr_w = sizeWHcand[candIdx[0]][0]; hdr_h = sizeWHcand[candIdx[0]][1]; }
-                    }
+                    // if IDCANCEL, leave hdr_w==0 -> fall through to default
                 }
             }
         }

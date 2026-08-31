@@ -21,6 +21,9 @@
     <ClCompile Include="OpenGLView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SelectSizeDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="SizeDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectSizeDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SizeDialog.h">

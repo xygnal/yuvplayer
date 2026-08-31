@@ -80,13 +80,20 @@
 #define ID_SEGMENT_16X16                40062
 #define ID_SEGMENT_END                  40062
 
+#define IDD_SELECT_SIZE                   148
+#define IDC_EDIT_CUSTOM_W                 1011
+#define IDC_EDIT_CUSTOM_H                 1012
+#define IDC_STATIC_X                      1013
+#define IDC_STATIC_W                      1014
+#define IDC_STATIC_H                      1015
+
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        148
+#define _APS_NEXT_RESOURCE_VALUE        149
 #define _APS_NEXT_COMMAND_VALUE         32832
-#define _APS_NEXT_CONTROL_VALUE         1011
+#define _APS_NEXT_CONTROL_VALUE         1016
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

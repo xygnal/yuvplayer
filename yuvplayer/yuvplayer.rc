@@ -97,6 +97,21 @@ BEGIN
     LTEXT           "Frame No",IDC_STATIC,7,8,33,10
 END
 
+IDD_SELECT_SIZE DIALOGEX 0, 0, 260, 150
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select YUV size"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "File size is multiple of several YUV420 sizes. Select one:",IDC_STATIC,7,7,246,8
+    EDITTEXT        IDC_EDIT_CUSTOM_W,58,123,40,14,ES_AUTOHSCROLL | ES_NUMBER | WS_DISABLED
+    EDITTEXT        IDC_EDIT_CUSTOM_H,112,123,40,14,ES_AUTOHSCROLL | ES_NUMBER | WS_DISABLED
+    LTEXT           "x",IDC_STATIC_X,101,126,8,8
+    LTEXT           "W",IDC_STATIC_W,48,126,10,8
+    LTEXT           "H",IDC_STATIC_H,154,126,10,8
+    DEFPUSHBUTTON   "OK",IDOK,149,132,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,203,132,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -265,6 +280,14 @@ BEGIN
         RIGHTMARGIN, 112
         TOPMARGIN, 7
         BOTTOMMARGIN, 19
+    END
+
+    IDD_SELECT_SIZE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 253
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 143
     END
 END
 #endif    // APSTUDIO_INVOKED

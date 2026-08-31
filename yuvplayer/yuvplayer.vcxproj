@@ -117,6 +117,7 @@
   <ItemGroup>
     <ClCompile Include="GoDialog.cpp" />
     <ClCompile Include="OpenGLView.cpp" />
+    <ClCompile Include="SelectSizeDialog.cpp" />
     <ClCompile Include="SizeDialog.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -129,6 +130,7 @@
     <ClInclude Include="GoDialog.h" />
     <ClInclude Include="OpenGLView.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SelectSizeDialog.h" />
     <ClInclude Include="SizeDialog.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="yuvplayer.h" />
